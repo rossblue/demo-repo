@@ -1,0 +1,49 @@
+-- Create the database
+CREATE DATABASE AIBotDatabase;
+GO
+
+-- Use the newly created database
+USE AIBotDatabase;
+GO
+
+-- Create the Users table
+CREATE TABLE Users (
+    UserID INT PRIMARY KEY IDENTITY(1,1),  -- Auto-incrementing User ID
+    Username VARCHAR(255) UNIQUE NOT NULL, -- Unique username
+    PasswordHash VARCHAR(255) NOT NULL,    -- Store password hash, NOT the actual password
+    Email VARCHAR(255) UNIQUE,              -- Unique email (optional)
+    CreatedAt DATETIME DEFAULT GETDATE()      -- Timestamp of user creation
+);
+GO
+
+-- Create the Conversations table
+CREATE TABLE Conversations (
+    ConversationID INT PRIMARY KEY IDENTITY(1,1), -- Auto-incrementing Conversation ID
+    UserID INT FOREIGN KEY REFERENCES Users(UserID), -- Foreign key linking to Users table
+    StartTime DATETIME DEFAULT GETDATE(),       -- Timestamp of conversation start
+    EndTime DATETIME                              -- Timestamp of conversation end (can be NULL if ongoing)
+);
+GO
+
+-- Create the Messages table
+CREATE TABLE Messages (
+    MessageID INT PRIMARY KEY IDENTITY(1,1), -- Auto-incrementing Message ID
+    ConversationID INT FOREIGN KEY REFERENCES Conversations(ConversationID), -- Foreign key linking to Conversations table
+    UserID INT FOREIGN KEY REFERENCES Users(UserID), -- Foreign key linking to Users table (who sent the message)
+    MessageText varchar(225) NOT NULL,                -- The actual message content
+    Timestamp DATETIME DEFAULT GETDATE(),       -- Timestamp of the message
+    IsBotResponse BIT DEFAULT 0               -- Flag to indicate if the message is from the bot (1) or user (0)
+);
+GO
+
+-- Example: Insert a user (remember to hash the password securely)
+-- INSERT INTO Users (Username, PasswordHash, Email) VALUES ('TestUser', 'hashed_password_here', 'test@example.com');
+
+-- Example: Start a conversation
+-- INSERT INTO Conversations (UserID) VALUES (1);  -- Assuming UserID 1 started the conversation
+
+-- Example: Send a message
+-- INSERT INTO Messages (ConversationID, UserID, MessageText, IsBotResponse) VALUES (1, 1, 'Hello, bot!', 0);
+
+-- Example: Bot response
+-- INSERT INTO Messages (ConversationID, UserID, MessageText, IsBotResponse) VALUES (1, NULL, 'Hi there!', 1); -- Bot's UserID can be NULL or a specific Bot User ID
