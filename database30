@@ -1,0 +1,74 @@
+-- Table to store user information
+CREATE TABLE Users (
+    UserID NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, -- Auto-incrementing in Oracle
+    Username VARCHAR2(50) NOT NULL UNIQUE,  -- VARCHAR2 in Oracle
+    PasswordHash VARCHAR2(255) NOT NULL,
+    Email VARCHAR2(100) NOT NULL UNIQUE,
+    FullName VARCHAR2(100),
+    DateOfBirth DATE,
+    Gender CHAR(1),
+    CreatedAt TIMESTAMP DEFAULT SYSTIMESTAMP, -- SYSTIMESTAMP for current time
+    LastLogin TIMESTAMP
+);
+
+-- Table to store conversation history
+CREATE TABLE Conversations (
+    ConversationID NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    UserID NUMBER NOT NULL,
+    Message VARCHAR2(2000) NOT NULL, -- Increased length, VARCHAR2 max is 4000
+    BotResponse VARCHAR2(2000) NOT NULL,
+    Timestamp TIMESTAMP DEFAULT SYSTIMESTAMP,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
+
+-- Table to store mental health assessments
+CREATE TABLE Assessments (
+    AssessmentID NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    UserID NUMBER NOT NULL,
+    AssessmentName VARCHAR2(255) NOT NULL,
+    Score NUMBER, -- NUMBER in Oracle
+    Result VARCHAR2(2000),  -- Increased length
+    TakenOn TIMESTAMP DEFAULT SYSTIMESTAMP,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
+
+-- Table to store mental health resources
+CREATE TABLE Resources (
+    ResourceID NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    Title VARCHAR2(255) NOT NULL,
+    Description VARCHAR2(2000), -- Increased length
+    Type VARCHAR2(50),
+    URL VARCHAR2(255),
+    AddedOn TIMESTAMP DEFAULT SYSTIMESTAMP
+);
+
+-- Table to store appointments
+CREATE TABLE Professionals (
+    ProfessionalID NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    Name VARCHAR2(100) NOT NULL,
+    Specialization VARCHAR2(255),
+    ContactInfo VARCHAR2(255)
+);
+
+CREATE TABLE Appointments (
+    AppointmentID NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    UserID NUMBER NOT NULL,
+    ProfessionalID NUMBER NOT NULL,
+    AppointmentDateTime TIMESTAMP NOT NULL,
+    Notes CLOB,  -- CLOB for large text
+    Status VARCHAR2(20) DEFAULT 'Scheduled',
+    CHECK (Status IN ('Scheduled', 'Completed', 'Cancelled')),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    FOREIGN KEY (ProfessionalID) REFERENCES Professionals(ProfessionalID)
+);
+
+
+-- Indexes (Important for performance)
+CREATE INDEX idx_users_username ON Users (Username);
+CREATE INDEX idx_users_email ON Users (Email);
+CREATE INDEX idx_conversations_userid ON Conversations (UserID);
+CREATE INDEX idx_assessments_userid ON Assessments (UserID);
+CREATE INDEX idx_appointments_userid ON Appointments (UserID);
+CREATE INDEX idx_appointments_professionalid ON Appointments (ProfessionalID);
+CREATE INDEX idx_appointments_datetime ON Appointments (AppointmentDateTime);
+CREATE INDEX idx_resources_title ON Resources (Title);
